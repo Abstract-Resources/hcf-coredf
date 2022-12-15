@@ -9,19 +9,18 @@ import (
 )
 
 var (
-	plugin *HCFCore = nil
+	plugin *HCF = nil
 
 	dataSource datasource.DataSource = nil
 )
 
-type HCFCore struct {
-
+type HCF struct {
 	server *server.Server
 	logger *logrus.Logger
 }
 
 func Initialize(srv *server.Server, logger *logrus.Logger, dSource datasource.DataSource) {
-	plugin = &HCFCore{
+	plugin = &HCF{
 		server: srv,
 		logger: logger,
 	}
@@ -32,7 +31,7 @@ func Initialize(srv *server.Server, logger *logrus.Logger, dSource datasource.Da
 		logger.Infof("Successfully connected %v", player.Name())
 
 		go func() {
-			profile.RegisterNewProfile(player, logger, dataSource.FetchProfile(player.XUID(), player.Name()))
+			profile.RegisterNewProfile(player, logger, dataSource, dataSource.FetchProfile(player.XUID(), player.Name()))
 		}()
 
 		//_ = profile.RegisterNewProfile(player, logger)
@@ -42,7 +41,7 @@ func Initialize(srv *server.Server, logger *logrus.Logger, dSource datasource.Da
 	}) {}
 }
 
-func Plugin() *HCFCore {
+func Plugin() *HCF {
 	return plugin
 }
 

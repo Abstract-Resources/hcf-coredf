@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"github.com/aabstractt/hcf-core/hcf/datasource"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/sirupsen/logrus"
 	"reflect"
@@ -24,11 +25,12 @@ type Profile struct {
 	balance int
 
 	logger *logrus.Logger
+	dataSource datasource.DataSource
 
 	handlerMethods map[string]reflect.Method
 }
 
-func RegisterNewProfile(player *player.Player, logger *logrus.Logger, profileData *ProfileData) *Profile {
+func RegisterNewProfile(player *player.Player, logger *logrus.Logger, dataSource datasource.DataSource, profileData *ProfileData) *Profile {
 	xuid := ""
 	name := ""
 
@@ -55,8 +57,11 @@ func RegisterNewProfile(player *player.Player, logger *logrus.Logger, profileDat
 		balance: profileData.balance,
 
 		logger:         logger,
+		dataSource: dataSource,
 		handlerMethods: make(map[string]reflect.Method),
 	}
+	profile.PushDataSource(profileData)
+
 	profiles.Store(xuid, profile)
 
 	if player != nil {
@@ -142,4 +147,25 @@ func (profile Profile) GetBalance() int {
 
 func (profile Profile) SetBalance(balance int) {
 	profile.balance = balance
+}
+
+func (profile Profile) PushDataSource(profileData *ProfileData) {
+	if profile.dataSource == nil {
+		return
+	}
+
+	if profileData == nil {
+		profileData = NewProfileData(
+			profile.xuid,
+			profile.name,
+			profile.factionId,
+			profile.factionRole,
+			profile.kills,
+			profile.deaths,
+			profile.balance,
+		)
+	}
+
+	// Execute this on other Thread to prevent lag spike on the Main thread!
+	go profile.dataSource.StoreProfile(*profileData)
 }
