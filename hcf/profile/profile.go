@@ -66,7 +66,10 @@ func RegisterNewProfile(player *player.Player, logger *logrus.Logger, profileDat
 		joinedAt: time.Now(),
 		handlerMethods: make(map[string]reflect.Method),
 	}
-	profile.PushDataSource(profileData)
+	
+	if !joinedBefore {
+		profile.PushDataSource(profileData)
+	}
 
 	profiles[xuid] = profile
 
@@ -99,7 +102,11 @@ func All() []*Profile {
 }
 
 func Close() {
-	// TODO: Flush all profiles stored
+	for _, profile := range All() {
+		profile.PushDataSource(nil)
+
+		delete(profiles, profile.GetXuid())
+	}
 }
 
 func (profile Profile) UpdateScoreboard()  {
@@ -172,6 +179,8 @@ func (profile Profile) SetBalance(balance int) {
 }
 
 func (profile Profile) PushDataSource(profileStorage *storage.ProfileStorage) {
+	fmt.Printf("Pushing " + profile.name + " into " + datasource.GetCurrentDataSource().GetName())
+
 	if profileStorage == nil {
 		profileStorage = storage.NewProfileStorage(
 			profile.xuid,
