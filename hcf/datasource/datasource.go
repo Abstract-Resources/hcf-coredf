@@ -14,9 +14,9 @@ type DataSource interface {
 
 	GetName() string
 
-	PushProfileStorage(profileData storage.ProfileStorage)
+	SaveProfileStorage(profileStorage storage.ProfileStorage)
 
-	FetchProfileStorage(xuid string, name string) *storage.ProfileStorage
+	LoadProfileStorage(xuid string, name string) *storage.ProfileStorage
 }
 
 func GetCurrentDataSource() DataSource {

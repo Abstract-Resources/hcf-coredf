@@ -17,11 +17,11 @@ func (dataSource MySQLDataSource) GetName() string {
 	return "MySQL"
 }
 
-func (dataSource MySQLDataSource) PushProfileStorage(profileStorage storage.ProfileStorage) {
+func (dataSource MySQLDataSource) SaveProfileStorage(profileStorage storage.ProfileStorage) {
 
 }
 
-func (dataSource MySQLDataSource) FetchProfileStorage(xuid string, name string) *storage.ProfileStorage {
+func (dataSource MySQLDataSource) LoadProfileStorage(xuid string, name string) *storage.ProfileStorage {
 	return nil
 }
 

@@ -162,5 +162,5 @@ func (profile Profile) PushDataSource(profileStorage *storage.ProfileStorage) {
 	}
 
 	// Execute this on other Thread to prevent lag spike on the Main thread!
-	go datasource.GetCurrentDataSource().PushProfileStorage(*profileStorage)
+	go datasource.GetCurrentDataSource().SaveProfileStorage(*profileStorage)
 }

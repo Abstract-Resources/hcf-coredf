@@ -17,11 +17,11 @@ func (dataSource MongoDBDataSource) GetName() string {
 	return "MongoDB"
 }
 
-func (dataSource MongoDBDataSource) PushProfileStorage(profileStorage storage.ProfileStorage) {
+func (dataSource MongoDBDataSource) SaveProfileStorage(profileStorage storage.ProfileStorage) {
 
 }
 
-func (dataSource MongoDBDataSource) FetchProfileStorage(xuid string, name string) *storage.ProfileStorage {
+func (dataSource MongoDBDataSource) LoadProfileStorage(xuid string, name string) *storage.ProfileStorage {
 	return nil
 }
 
