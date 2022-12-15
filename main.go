@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 	"github.com/aabstractt/hcf-core/hcf"
+	"github.com/aabstractt/hcf-core/hcf/config"
 	"github.com/aabstractt/hcf-core/hcf/datasource"
 	"github.com/df-mc/dragonfly/server"
 	"github.com/df-mc/dragonfly/server/player/chat"
 	"github.com/pelletier/go-toml"
 	"github.com/sirupsen/logrus"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -37,25 +37,10 @@ func main() {
 	srv.CloseOnProgramEnd()
 	srv.Listen()
 
-	hcf.Initialize(srv, log, getDataSource(&srvConf))
+	datasource.NewDataSource(&srvConf)
+	hcf.NewPlugin(srv, log)
 
 	log.Info("Hola")
-}
-
-func getDataSource(conf *hcf.ServerConfig) datasource.DataSource {
-	if conf == nil {
-		return nil
-	}
-
-	provider := conf.Provider
-
-	if strings.ToLower(provider.ProviderName) == "mongodb" {
-		return datasource.NewMongoDB(provider.Address, provider.Username, provider.Password, provider.Dbname)
-	} else if strings.ToLower(provider.ProviderName) == "mysql" {
-		return datasource.NewMySQL(provider.Address, provider.Username, provider.Password, provider.Dbname)
-	}
-
-	return nil
 }
 
 // readConfig reads the configuration from the config.toml file, or creates the
@@ -86,9 +71,9 @@ func readConfig(log server.Logger) (server.Config, error) {
 	return c.Config(log)
 }
 
-func readServerConfig() (hcf.ServerConfig, error) {
-	c := hcf.DefaultConfig()
-	var zero hcf.ServerConfig
+func readServerConfig() (config.ServerConfig, error) {
+	c := config.DefaultConfig()
+	var zero config.ServerConfig
 	if _, err := os.Stat("server_config.toml"); os.IsNotExist(err) {
 		data, err := toml.Marshal(c)
 		if err != nil {

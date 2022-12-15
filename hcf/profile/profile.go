@@ -26,12 +26,11 @@ type Profile struct {
 	balance int
 
 	logger *logrus.Logger
-	dataSource datasource.DataSource
 
 	handlerMethods map[string]reflect.Method
 }
 
-func RegisterNewProfile(player *player.Player, logger *logrus.Logger, profileData *storage.ProfileStorage, dataSource datasource.DataSource) *Profile {
+func RegisterNewProfile(player *player.Player, logger *logrus.Logger, profileData *storage.ProfileStorage) *Profile {
 	xuid := ""
 	name := ""
 
@@ -58,7 +57,6 @@ func RegisterNewProfile(player *player.Player, logger *logrus.Logger, profileDat
 		balance: profileData.Balance(),
 
 		logger:         logger,
-		dataSource: dataSource,
 		handlerMethods: make(map[string]reflect.Method),
 	}
 	profile.PushDataSource(profileData)
@@ -151,10 +149,6 @@ func (profile Profile) SetBalance(balance int) {
 }
 
 func (profile Profile) PushDataSource(profileStorage *storage.ProfileStorage) {
-	if profile.dataSource == nil {
-		return
-	}
-
 	if profileStorage == nil {
 		profileStorage = storage.NewProfileStorage(
 			profile.xuid,
@@ -168,5 +162,5 @@ func (profile Profile) PushDataSource(profileStorage *storage.ProfileStorage) {
 	}
 
 	// Execute this on other Thread to prevent lag spike on the Main thread!
-	go profile.dataSource.PushProfileStorage(*profileStorage)
+	go datasource.GetCurrentDataSource().PushProfileStorage(*profileStorage)
 }

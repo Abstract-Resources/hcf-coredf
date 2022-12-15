@@ -1,4 +1,4 @@
-package hcf
+package config
 
 // ServerConfig is an extension of the Dragonfly server config to include fields specific to Vasar.
 type ServerConfig struct {

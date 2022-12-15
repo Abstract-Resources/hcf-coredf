@@ -10,8 +10,6 @@ import (
 
 var (
 	plugin *HCF = nil
-
-	dataSource datasource.DataSource = nil
 )
 
 type HCF struct {
@@ -19,21 +17,19 @@ type HCF struct {
 	logger *logrus.Logger
 }
 
-func Initialize(srv *server.Server, logger *logrus.Logger, dSource datasource.DataSource) {
+func NewPlugin(srv *server.Server, logger *logrus.Logger) {
 	plugin = &HCF{
 		server: srv,
 		logger: logger,
 	}
 
-	dataSource = dSource
-
 	for srv.Accept(func(player *player.Player) {
 		logger.Infof("Successfully connected %v", player.Name())
 
 		go func() {
-			logger.Infof("Fetching the " + player.Name() + "'s profile stored on " + dataSource.GetName() + "!")
+			logger.Infof("Fetching the " + player.Name() + "'s profile stored on " + datasource.GetCurrentDataSource().GetName() + "!")
 
-			profile.RegisterNewProfile(player, logger, dataSource.FetchProfileStorage(player.XUID(), player.Name()), dataSource)
+			profile.RegisterNewProfile(player, logger, datasource.GetCurrentDataSource().FetchProfileStorage(player.XUID(), player.Name()))
 		}()
 
 		//_ = profile.RegisterNewProfile(player, logger)
@@ -45,8 +41,4 @@ func Initialize(srv *server.Server, logger *logrus.Logger, dSource datasource.Da
 
 func Plugin() *HCF {
 	return plugin
-}
-
-func DataSource() datasource.DataSource {
-	return dataSource
 }
