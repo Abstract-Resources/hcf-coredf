@@ -31,7 +31,9 @@ func Initialize(srv *server.Server, logger *logrus.Logger, dSource datasource.Da
 		logger.Infof("Successfully connected %v", player.Name())
 
 		go func() {
-			profile.RegisterNewProfile(player, logger, dataSource, dataSource.FetchProfile(player.XUID(), player.Name()))
+			logger.Infof("Fetching the " + player.Name() + "'s profile stored on " + dataSource.GetName() + "!")
+
+			profile.RegisterNewProfile(player, logger, dataSource.FetchProfileStorage(player.XUID(), player.Name()), dataSource)
 		}()
 
 		//_ = profile.RegisterNewProfile(player, logger)

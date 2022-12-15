@@ -1,14 +1,14 @@
 package datasource
 
 import (
-	"github.com/aabstractt/hcf-core/hcf/profile"
+	"github.com/aabstractt/hcf-core/hcf/profile/storage"
 )
 
 type DataSource interface {
 
 	GetName() string
 
-	StoreProfile(profileData profile.ProfileData)
+	PushProfileStorage(profileData storage.ProfileStorage)
 
-	FetchProfile(xuid string, name string) *profile.ProfileData
+	FetchProfileStorage(xuid string, name string) *storage.ProfileStorage
 }

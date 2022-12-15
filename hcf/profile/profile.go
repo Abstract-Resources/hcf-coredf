@@ -2,6 +2,7 @@ package profile
 
 import (
 	"github.com/aabstractt/hcf-core/hcf/datasource"
+	"github.com/aabstractt/hcf-core/hcf/profile/storage"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/sirupsen/logrus"
 	"reflect"
@@ -30,7 +31,7 @@ type Profile struct {
 	handlerMethods map[string]reflect.Method
 }
 
-func RegisterNewProfile(player *player.Player, logger *logrus.Logger, dataSource datasource.DataSource, profileData *ProfileData) *Profile {
+func RegisterNewProfile(player *player.Player, logger *logrus.Logger, profileData *storage.ProfileStorage, dataSource datasource.DataSource) *Profile {
 	xuid := ""
 	name := ""
 
@@ -42,7 +43,7 @@ func RegisterNewProfile(player *player.Player, logger *logrus.Logger, dataSource
 	joinedBefore := profileData != nil
 
 	if !joinedBefore {
-		profileData = NewProfileData(xuid, name, nil, 0, 0, 0, 0)
+		profileData = storage.NewProfileStorage(xuid, name, nil, 0, 0, 0, 0)
 	}
 
 	profile := &Profile{
@@ -50,11 +51,11 @@ func RegisterNewProfile(player *player.Player, logger *logrus.Logger, dataSource
 		xuid:           xuid,
 		name:           name,
 
-		factionId: profileData.factionId,
-		factionRole: profileData.factionRole,
-		kills: profileData.kills,
-		deaths: profileData.deaths,
-		balance: profileData.balance,
+		factionId: profileData.FactionId(),
+		factionRole: profileData.FactionRole(),
+		kills: profileData.Kills(),
+		deaths: profileData.Deaths(),
+		balance: profileData.Balance(),
 
 		logger:         logger,
 		dataSource: dataSource,
@@ -149,13 +150,13 @@ func (profile Profile) SetBalance(balance int) {
 	profile.balance = balance
 }
 
-func (profile Profile) PushDataSource(profileData *ProfileData) {
+func (profile Profile) PushDataSource(profileStorage *storage.ProfileStorage) {
 	if profile.dataSource == nil {
 		return
 	}
 
-	if profileData == nil {
-		profileData = NewProfileData(
+	if profileStorage == nil {
+		profileStorage = storage.NewProfileStorage(
 			profile.xuid,
 			profile.name,
 			profile.factionId,
@@ -167,5 +168,5 @@ func (profile Profile) PushDataSource(profileData *ProfileData) {
 	}
 
 	// Execute this on other Thread to prevent lag spike on the Main thread!
-	go profile.dataSource.StoreProfile(*profileData)
+	go profile.dataSource.PushProfileStorage(*profileStorage)
 }

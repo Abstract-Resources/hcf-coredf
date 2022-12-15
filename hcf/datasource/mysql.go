@@ -1,6 +1,8 @@
 package datasource
 
-import "github.com/aabstractt/hcf-core/hcf/profile"
+import (
+	"github.com/aabstractt/hcf-core/hcf/profile/storage"
+)
 
 type MySQLDataSource struct {
 	DataSource
@@ -15,11 +17,11 @@ func (dataSource MySQLDataSource) GetName() string {
 	return "MySQL"
 }
 
-func (dataSource MySQLDataSource) StoreProfile(profileData profile.ProfileData) {
+func (dataSource MySQLDataSource) PushProfileStorage(profileStorage storage.ProfileStorage) {
 
 }
 
-func (dataSource MySQLDataSource) FetchProfile(xuid string, name string) *profile.ProfileData {
+func (dataSource MySQLDataSource) FetchProfileStorage(xuid string, name string) *storage.ProfileStorage {
 	return nil
 }
 

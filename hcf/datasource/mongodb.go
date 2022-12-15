@@ -1,6 +1,8 @@
 package datasource
 
-import "github.com/aabstractt/hcf-core/hcf/profile"
+import (
+	"github.com/aabstractt/hcf-core/hcf/profile/storage"
+)
 
 type MongoDBDataSource struct {
 	DataSource
@@ -15,11 +17,11 @@ func (dataSource MongoDBDataSource) GetName() string {
 	return "MongoDB"
 }
 
-func (dataSource MongoDBDataSource) StoreProfile(profileData profile.ProfileData) {
+func (dataSource MongoDBDataSource) PushProfileStorage(profileStorage storage.ProfileStorage) {
 
 }
 
-func (dataSource MongoDBDataSource) FetchProfile(xuid string, name string) *profile.ProfileData {
+func (dataSource MongoDBDataSource) FetchProfileStorage(xuid string, name string) *storage.ProfileStorage {
 	return nil
 }
 
