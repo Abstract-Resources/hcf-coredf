@@ -21,7 +21,7 @@ func (dataSource MongoDBDataSource) SaveProfileStorage(profileStorage storage.Pr
 
 }
 
-func (dataSource MongoDBDataSource) LoadProfileStorage(xuid string, name string) *storage.ProfileStorage {
+func (dataSource MongoDBDataSource) LoadProfileStorage(xuid string) *storage.ProfileStorage {
 	return nil
 }
 

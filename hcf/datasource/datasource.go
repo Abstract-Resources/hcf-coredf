@@ -16,7 +16,7 @@ type DataSource interface {
 
 	SaveProfileStorage(profileStorage storage.ProfileStorage)
 
-	LoadProfileStorage(xuid string, name string) *storage.ProfileStorage
+	LoadProfileStorage(xuid string) *storage.ProfileStorage
 }
 
 func GetCurrentDataSource() DataSource {
@@ -33,7 +33,6 @@ func NewDataSource(conf *config.ServerConfig) {
 	}
 
 	provider := conf.Provider
-
 	if strings.ToLower(provider.ProviderName) == "mongodb" {
 		dataSource = NewMongoDB(provider.Address, provider.Username, provider.Password, provider.Dbname)
 	} else if strings.ToLower(provider.ProviderName) == "mysql" {

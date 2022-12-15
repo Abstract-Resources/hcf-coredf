@@ -29,7 +29,7 @@ func NewPlugin(srv *server.Server, logger *logrus.Logger) {
 		go func() {
 			logger.Infof("Fetching the " + player.Name() + "'s profile stored on " + datasource.GetCurrentDataSource().GetName() + "!")
 
-			profile.RegisterNewProfile(player, logger, datasource.GetCurrentDataSource().LoadProfileStorage(player.XUID(), player.Name()))
+			profile.RegisterNewProfile(player, logger, datasource.GetCurrentDataSource().LoadProfileStorage(player.XUID()))
 		}()
 
 		//_ = profile.RegisterNewProfile(player, logger)

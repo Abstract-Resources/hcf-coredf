@@ -21,7 +21,7 @@ func (dataSource MySQLDataSource) SaveProfileStorage(profileStorage storage.Prof
 
 }
 
-func (dataSource MySQLDataSource) LoadProfileStorage(xuid string, name string) *storage.ProfileStorage {
+func (dataSource MySQLDataSource) LoadProfileStorage(xuid string) *storage.ProfileStorage {
 	return nil
 }
 
