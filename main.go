@@ -5,6 +5,7 @@ import (
 	"github.com/aabstractt/hcf-core/hcf"
 	"github.com/aabstractt/hcf-core/hcf/config"
 	"github.com/aabstractt/hcf-core/hcf/datasource"
+	"github.com/aabstractt/hcf-core/hcf/profile"
 	"github.com/df-mc/dragonfly/server"
 	"github.com/df-mc/dragonfly/server/player/chat"
 	"github.com/pelletier/go-toml"
@@ -31,6 +32,8 @@ func main() {
 		return
 	}
 
+	log.Warn("Server config was created! Please restart the server to modify that")
+
 	chat.Global.Subscribe(chat.StdoutSubscriber{})
 
 	srv := conf.New()
@@ -40,7 +43,8 @@ func main() {
 	datasource.NewDataSource(&srvConf)
 	hcf.NewPlugin(srv, log)
 
-	log.Info("Hola")
+	// Flush all profiles stored into cache and save that on the db provider
+	profile.Close()
 }
 
 // readConfig reads the configuration from the config.toml file, or creates the

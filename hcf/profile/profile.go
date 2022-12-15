@@ -86,9 +86,15 @@ func FlushProfile(xuid string) {
 		return
 	}
 
+	profile.PushDataSource(nil)
+
 	profile.Logger().Info(profile.GetName() + " was flushed successfully!")
 
 	profiles.Delete(xuid)
+}
+
+func Close() {
+	// TODO: Flush all profiles stored
 }
 
 func (profile Profile) Logger() *logrus.Logger {
