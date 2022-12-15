@@ -6,10 +6,13 @@ import (
 	"github.com/df-mc/dragonfly/server"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 var (
 	plugin *HCF = nil
+
+	scoreboardTicker *time.Ticker = nil
 )
 
 type HCF struct {
@@ -22,6 +25,19 @@ func NewPlugin(srv *server.Server, logger *logrus.Logger) {
 		server: srv,
 		logger: logger,
 	}
+
+	go func() {
+		scoreboardTicker = time.NewTicker(time.Millisecond * 50)
+
+		for {
+			select {
+			case <-scoreboardTicker.C:
+				for _, profileVar := range profile.All() {
+					profileVar.UpdateScoreboard()
+				}
+			}
+		}
+	}()
 
 	for srv.Accept(func(player *player.Player) {
 		logger.Infof("Successfully connected %v", player.Name())
@@ -41,4 +57,8 @@ func NewPlugin(srv *server.Server, logger *logrus.Logger) {
 
 func Plugin() *HCF {
 	return plugin
+}
+
+func ScoreboardTicker() *time.Ticker  {
+	return scoreboardTicker
 }

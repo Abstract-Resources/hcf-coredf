@@ -1,16 +1,21 @@
 package profile
 
 import (
+	"fmt"
 	"github.com/aabstractt/hcf-core/hcf/datasource"
 	"github.com/aabstractt/hcf-core/hcf/profile/storage"
+	"github.com/aabstractt/hcf-core/hcf/utils"
 	"github.com/df-mc/dragonfly/server/player"
+	scoreboard2 "github.com/df-mc/dragonfly/server/player/scoreboard"
+	"github.com/sandertv/gophertunnel/minecraft/text"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/maps"
 	"reflect"
-	"sync"
+	"time"
 )
 
 var (
-	profiles sync.Map
+	profiles = make(map[string]*Profile)
 )
 
 type Profile struct {
@@ -26,6 +31,7 @@ type Profile struct {
 	balance int
 
 	logger *logrus.Logger
+	joinedAt time.Time
 
 	handlerMethods map[string]reflect.Method
 }
@@ -57,11 +63,12 @@ func RegisterNewProfile(player *player.Player, logger *logrus.Logger, profileDat
 		balance: profileData.Balance(),
 
 		logger:         logger,
+		joinedAt: time.Now(),
 		handlerMethods: make(map[string]reflect.Method),
 	}
 	profile.PushDataSource(profileData)
 
-	profiles.Store(xuid, profile)
+	profiles[xuid] = profile
 
 	if player != nil {
 		//player.Handle(NewPlayerHandler(profile))
@@ -71,13 +78,7 @@ func RegisterNewProfile(player *player.Player, logger *logrus.Logger, profileDat
 }
 
 func GetIfLoaded(xuid string) *Profile {
-	profileVar, exists := profiles.Load(xuid)
-
-	if exists {
-		return profileVar.(*Profile)
-	}
-
-	return nil
+	return profiles[xuid]
 }
 
 func FlushProfile(xuid string) {
@@ -90,11 +91,27 @@ func FlushProfile(xuid string) {
 
 	profile.Logger().Info(profile.GetName() + " was flushed successfully!")
 
-	profiles.Delete(xuid)
+	delete(profiles, xuid)
+}
+
+func All() []*Profile {
+	return maps.Values(profiles)
 }
 
 func Close() {
 	// TODO: Flush all profiles stored
+}
+
+func (profile Profile) UpdateScoreboard()  {
+	scoreboard := scoreboard2.New(text.Colourf("<green><bold>HCF"))
+
+	_, err := scoreboard.WriteString(fmt.Sprintf(utils.Colour("&e\n&b&lClaim: &r&aSpawn\n&a&lTime: &r&c%v\n&a\n&7mc.serverhcf.net"), fmt.Sprintf("%.1f", time.Since(profile.joinedAt).Seconds())))
+	if err != nil {
+		return
+	}
+
+	scoreboard.RemovePadding()
+	profile.Player().SendScoreboard(scoreboard)
 }
 
 func (profile Profile) Logger() *logrus.Logger {
