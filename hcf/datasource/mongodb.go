@@ -18,8 +18,6 @@ var (
 )
 
 type MongoDBDataSource struct {
-	DataSource
-
 	address string
 	username string
 	password string

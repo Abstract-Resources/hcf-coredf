@@ -7,9 +7,7 @@ import (
 	"strings"
 )
 
-var (
-	dataSource DataSource = nil
-)
+var dataSource DataSource = nil
 
 type DataSource interface {
 

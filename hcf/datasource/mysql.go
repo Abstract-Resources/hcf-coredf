@@ -6,8 +6,6 @@ import (
 )
 
 type MySQLDataSource struct {
-	DataSource
-
 	address string
 	username string
 	password string
