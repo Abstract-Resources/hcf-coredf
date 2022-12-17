@@ -30,7 +30,7 @@ func (dataSource MongoDBDataSource) Initialize(log *logrus.Logger) bool {
 	logger = log
 
 	//clientOptions := options.Client().ApplyURI("mongodb+srv://xavier:xavier123@@cluster0.y05ycq4.mongodb.net/test")
-	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb+srv://%s:%s@%s/test", dataSource.username, dataSource.password, dataSource.address))
+	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb+srv://%s:%s@%s", dataSource.username, dataSource.password, dataSource.address))
 
 	localClient, err := mongo.Connect(context.TODO(), clientOptions)
 

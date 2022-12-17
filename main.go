@@ -2,18 +2,23 @@ package main
 
 import (
 	"fmt"
-	"github.com/aabstractt/hcf-core/hcf"
+	factionCommand "github.com/aabstractt/hcf-core/hcf/command/faction"
 	"github.com/aabstractt/hcf-core/hcf/config"
 	"github.com/aabstractt/hcf-core/hcf/datasource"
 	"github.com/aabstractt/hcf-core/hcf/faction"
 	"github.com/aabstractt/hcf-core/hcf/profile"
 	"github.com/aabstractt/hcf-core/hcf/utils"
 	"github.com/df-mc/dragonfly/server"
+	"github.com/df-mc/dragonfly/server/cmd"
+	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/player/chat"
 	"github.com/pelletier/go-toml"
 	"github.com/sirupsen/logrus"
 	"os"
+	"time"
 )
+
+var scoreboardTicker *time.Ticker = nil
 
 func main() {
 	log := logrus.New()
@@ -46,12 +51,34 @@ func main() {
 
 	utils.SetServer(srv)
 	datasource.NewDataSource(log)
-	log.Info("DTR is ", srvConf.Factions.DTR)
-
 	go faction.RegisterFactionsStored()
-	hcf.NewPlugin(srv, log)
 
-	hcf.ScoreboardTicker().Stop()
+	go func() {
+		scoreboardTicker = time.NewTicker(time.Millisecond * 50)
+
+		for {
+			select {
+			case <-scoreboardTicker.C:
+				for _, profileVar := range profile.All() {
+					profileVar.UpdateScoreboard()
+				}
+			}
+		}
+	}()
+
+	cmd.Register(cmd.New("faction", "Factions management", []string{"f"}, factionCommand.CreateArgument{}))
+
+	for srv.Accept(func(player *player.Player) {
+		log.Infof("Successfully connected %v", player.Name())
+
+		go func() {
+			log.Infof("Fetching the " + player.Name() + "'s profile stored on " + datasource.GetCurrentDataSource().GetName() + "!")
+
+			profile.RegisterNewProfile(player, log, datasource.GetCurrentDataSource().LoadProfileStorage(player.XUID()))
+		}()
+	}) {}
+
+	scoreboardTicker.Stop()
 
 	// Flush all profiles stored into cache and save that on the db provider
 	profile.Close()
