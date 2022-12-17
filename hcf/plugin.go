@@ -1,9 +1,11 @@
 package hcf
 
 import (
+	"github.com/aabstractt/hcf-core/hcf/command/faction"
 	"github.com/aabstractt/hcf-core/hcf/datasource"
 	"github.com/aabstractt/hcf-core/hcf/profile"
 	"github.com/df-mc/dragonfly/server"
+	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/sirupsen/logrus"
 	"time"
@@ -39,6 +41,8 @@ func NewPlugin(srv *server.Server, logger *logrus.Logger) {
 		}
 	}()
 
+	cmd.Register(cmd.New("faction", "Factions management", []string{"f"}, faction.CreateArgument{}))
+
 	for srv.Accept(func(player *player.Player) {
 		logger.Infof("Successfully connected %v", player.Name())
 
@@ -50,13 +54,17 @@ func NewPlugin(srv *server.Server, logger *logrus.Logger) {
 
 		//_ = profile.RegisterNewProfile(player, logger)
 
-		/*p.RegisterHandler(handlers.NewHandleQuit(p.GetXuid()))
-		p.RegisterHandler(handlers.NewHandleChat(p.GetXuid()))*/
+		/*p.RegisterHandler(handlers.NewHandleQuit(p.XUID()))
+		p.RegisterHandler(handlers.NewHandleChat(p.XUID()))*/
 	}) {}
 }
 
 func Plugin() *HCF {
 	return plugin
+}
+
+func Server() *server.Server {
+	return plugin.server
 }
 
 func ScoreboardTicker() *time.Ticker  {

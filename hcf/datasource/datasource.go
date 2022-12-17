@@ -2,7 +2,8 @@ package datasource
 
 import (
 	"github.com/aabstractt/hcf-core/hcf/config"
-	"github.com/aabstractt/hcf-core/hcf/profile/storage"
+	"github.com/aabstractt/hcf-core/hcf/datasource/storage"
+	"github.com/sirupsen/logrus"
 	"strings"
 )
 
@@ -14,9 +15,17 @@ type DataSource interface {
 
 	GetName() string
 
-	SaveProfileStorage(profileStorage storage.ProfileStorage)
+	Initialize(log *logrus.Logger) bool
+
+	SaveProfileStorage(profileStorage storage.ProfileStorage, joinedBefore bool)
 
 	LoadProfileStorage(xuid string) *storage.ProfileStorage
+
+	SaveFactionStorage(factionStorage storage.FactionStorage)
+
+	LoadFactionStorage(factionId string) *storage.FactionStorage
+
+	LoadFactionsStored() []storage.FactionStorage
 }
 
 func GetCurrentDataSource() DataSource {
@@ -27,7 +36,7 @@ func GetCurrentDataSource() DataSource {
 	return dataSource
 }
 
-func NewDataSource(conf *config.ServerConfig) {
+func NewDataSource(conf *config.ServerConfig, log *logrus.Logger) {
 	if conf == nil {
 		return
 	}
@@ -39,5 +48,15 @@ func NewDataSource(conf *config.ServerConfig) {
 		dataSource = NewMySQL(provider.Address, provider.Username, provider.Password, provider.Dbname)
 	} else {
 		panic("Please provide a valid type Data Source")
+
+		return
 	}
+
+	if !dataSource.Initialize(log) {
+		log.Fatal("An error occurred while triad initialize the database!")
+
+		return
+	}
+
+	log.Info("Successfully initialized '" + dataSource.GetName() + "' as database provider")
 }

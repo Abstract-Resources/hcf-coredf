@@ -3,7 +3,7 @@ package profile
 import (
 	"fmt"
 	"github.com/aabstractt/hcf-core/hcf/datasource"
-	"github.com/aabstractt/hcf-core/hcf/profile/storage"
+	"github.com/aabstractt/hcf-core/hcf/datasource/storage"
 	"github.com/aabstractt/hcf-core/hcf/utils"
 	"github.com/df-mc/dragonfly/server/player"
 	scoreboard2 "github.com/df-mc/dragonfly/server/player/scoreboard"
@@ -24,7 +24,7 @@ type Profile struct {
 	xuid string
 	name string
 
-	factionId *string
+	factionId string
 	factionRole int
 	kills int
 	deaths int
@@ -36,7 +36,7 @@ type Profile struct {
 	handlerMethods map[string]reflect.Method
 }
 
-func RegisterNewProfile(player *player.Player, logger *logrus.Logger, profileData *storage.ProfileStorage) *Profile {
+func RegisterNewProfile(player *player.Player, logger *logrus.Logger, profileStorage *storage.ProfileStorage) *Profile {
 	xuid := ""
 	name := ""
 
@@ -45,10 +45,10 @@ func RegisterNewProfile(player *player.Player, logger *logrus.Logger, profileDat
 		name = player.Name()
 	}
 
-	joinedBefore := profileData != nil
+	joinedBefore := profileStorage != nil
 
 	if !joinedBefore {
-		profileData = storage.NewProfileStorage(xuid, name, nil, 0, 0, 0, 0)
+		profileStorage = storage.NewProfileStorage(xuid, name, "", 0, 0, 0, 0)
 	}
 
 	profile := &Profile{
@@ -56,19 +56,19 @@ func RegisterNewProfile(player *player.Player, logger *logrus.Logger, profileDat
 		xuid:           xuid,
 		name:           name,
 
-		factionId: profileData.FactionId(),
-		factionRole: profileData.FactionRole(),
-		kills: profileData.Kills(),
-		deaths: profileData.Deaths(),
-		balance: profileData.Balance(),
+		factionId:   profileStorage.FactionId,
+		factionRole: profileStorage.FactionRole,
+		kills:       profileStorage.Kills,
+		deaths:      profileStorage.Deaths,
+		balance:     profileStorage.Balance,
 
 		logger:         logger,
 		joinedAt: time.Now(),
 		handlerMethods: make(map[string]reflect.Method),
 	}
-	
+
 	if !joinedBefore {
-		profile.PushDataSource(profileData)
+		profile.Save(profileStorage, false)
 	}
 
 	profiles[xuid] = profile
@@ -90,9 +90,11 @@ func FlushProfile(xuid string) {
 		return
 	}
 
-	profile.PushDataSource(nil)
+	profile.kills += 5
 
-	profile.Logger().Info(profile.GetName() + " was flushed successfully!")
+	profile.Save(nil, true)
+
+	profile.Logger().Info(profile.Name() + " was flushed successfully!")
 
 	delete(profiles, xuid)
 }
@@ -102,10 +104,8 @@ func All() []*Profile {
 }
 
 func Close() {
-	for _, profile := range All() {
-		profile.PushDataSource(nil)
-
-		delete(profiles, profile.GetXuid())
+	for xuid := range profiles {
+		FlushProfile(xuid)
 	}
 }
 
@@ -129,24 +129,24 @@ func (profile Profile) Player() *player.Player {
 	return profile.player
 }
 
-func (profile Profile) GetXuid() string {
+func (profile Profile) XUID() string {
 	return profile.xuid
 }
 
-func (profile Profile) GetName() string {
+func (profile Profile) Name() string {
 	return profile.name
 }
 
-func (profile Profile) GetFactionId() string {
-	return *profile.factionId // To disallow change the value i think x d
+func (profile Profile) FactionId() (string, bool) {
+	return profile.factionId, len(profile.factionId) > 0
 }
 
 // SetFactionId To allow use nil values
-func (profile Profile) SetFactionId(factionId *string) {
+func (profile Profile) SetFactionId(factionId string) {
 	profile.factionId = factionId
 }
 
-func (profile Profile) GetFactionRole() int {
+func (profile Profile) FactionRole() int {
 	return profile.factionRole
 }
 
@@ -154,7 +154,7 @@ func (profile Profile) SetFactionRole(factionRole int) {
 	profile.factionRole = factionRole
 }
 
-func (profile Profile) GetKills() int {
+func (profile Profile) Kills() int {
 	return profile.kills
 }
 
@@ -162,7 +162,7 @@ func (profile Profile) SetKills(kills int) {
 	profile.kills = kills
 }
 
-func (profile Profile) GetDeaths() int {
+func (profile Profile) Deaths() int {
 	return profile.deaths
 }
 
@@ -170,7 +170,7 @@ func (profile Profile) SetDeaths(deaths int) {
 	profile.deaths = deaths
 }
 
-func (profile Profile) GetBalance() int {
+func (profile Profile) Balance() int {
 	return profile.balance
 }
 
@@ -178,9 +178,7 @@ func (profile Profile) SetBalance(balance int) {
 	profile.balance = balance
 }
 
-func (profile Profile) PushDataSource(profileStorage *storage.ProfileStorage) {
-	fmt.Printf("Pushing " + profile.name + " into " + datasource.GetCurrentDataSource().GetName())
-
+func (profile Profile) Save(profileStorage *storage.ProfileStorage, joinedBefore bool) {
 	if profileStorage == nil {
 		profileStorage = storage.NewProfileStorage(
 			profile.xuid,
@@ -194,5 +192,5 @@ func (profile Profile) PushDataSource(profileStorage *storage.ProfileStorage) {
 	}
 
 	// Execute this on other Thread to prevent lag spike on the Main thread!
-	go datasource.GetCurrentDataSource().SaveProfileStorage(*profileStorage)
+	go datasource.GetCurrentDataSource().SaveProfileStorage(*profileStorage, joinedBefore)
 }

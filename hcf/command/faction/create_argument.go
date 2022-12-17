@@ -1,7 +1,9 @@
 package faction
 
 import (
+	"github.com/aabstractt/hcf-core/hcf/faction"
 	"github.com/aabstractt/hcf-core/hcf/profile"
+	"github.com/aabstractt/hcf-core/hcf/utils"
 	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/player"
 )
@@ -21,7 +23,18 @@ func (clazz CreateArgument) Run(source cmd.Source, _ *cmd.Output) {
 		return
 	}
 
-	/*kit.RegisterNewKit(clazz.KitName, sender.Inventory().Items(), sender.Armour().Items(), true)
+	if faction.GetPlayerFaction(sender.Name()) != nil {
+		sender.Message(utils.ReplacePlaceHolders("YOU_ALREADY_IN_FACTION"))
 
-	sender.Message("Kit " + clazz.KitName + " was successfully created!")*/
+		return
+	}
+
+	f := faction.GetFaction(clazz.FactionName)
+	if f != nil {
+		sender.Message(utils.ReplacePlaceHolders("FACTION_ALREADY_EXISTS", clazz.FactionName))
+
+		return
+	}
+
+	// TODO: Create a new faction and register that
 }

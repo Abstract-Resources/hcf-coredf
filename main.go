@@ -5,6 +5,7 @@ import (
 	"github.com/aabstractt/hcf-core/hcf"
 	"github.com/aabstractt/hcf-core/hcf/config"
 	"github.com/aabstractt/hcf-core/hcf/datasource"
+	"github.com/aabstractt/hcf-core/hcf/faction"
 	"github.com/aabstractt/hcf-core/hcf/profile"
 	"github.com/df-mc/dragonfly/server"
 	"github.com/df-mc/dragonfly/server/player/chat"
@@ -40,8 +41,11 @@ func main() {
 	srv.CloseOnProgramEnd()
 	srv.Listen()
 
-	datasource.NewDataSource(&srvConf)
+	datasource.NewDataSource(&srvConf, log)
+	go faction.RegisterFactionsStored()
 	hcf.NewPlugin(srv, log)
+
+	hcf.ScoreboardTicker().Stop()
 
 	// Flush all profiles stored into cache and save that on the db provider
 	profile.Close()

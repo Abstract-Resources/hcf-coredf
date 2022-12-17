@@ -1,10 +1,10 @@
 
 [Provider]
-  Address = "127.0.0.1"
-  Dbname = "hcf_core"
-  Password = ""
+  Address = "cluster0.y05ycq4.mongodb.net"
+  Dbname = "test"
+  Password = "xavier123"
   ProviderName = "MongoDB"
-  Username = "admin"
+  Username = "xavier"
 
 [Server]
   Whitelisted = true
