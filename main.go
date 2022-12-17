@@ -7,6 +7,7 @@ import (
 	"github.com/aabstractt/hcf-core/hcf/datasource"
 	"github.com/aabstractt/hcf-core/hcf/faction"
 	"github.com/aabstractt/hcf-core/hcf/profile"
+	"github.com/aabstractt/hcf-core/hcf/utils"
 	"github.com/df-mc/dragonfly/server"
 	"github.com/df-mc/dragonfly/server/player/chat"
 	"github.com/pelletier/go-toml"
@@ -33,6 +34,8 @@ func main() {
 		return
 	}
 
+	config.SetConfig(&srvConf)
+
 	log.Warn("Server config was created! Please restart the server to modify that")
 
 	chat.Global.Subscribe(chat.StdoutSubscriber{})
@@ -41,7 +44,10 @@ func main() {
 	srv.CloseOnProgramEnd()
 	srv.Listen()
 
-	datasource.NewDataSource(&srvConf, log)
+	utils.SetServer(srv)
+	datasource.NewDataSource(log)
+	log.Info("DTR is ", srvConf.Factions.DTR)
+
 	go faction.RegisterFactionsStored()
 	hcf.NewPlugin(srv, log)
 

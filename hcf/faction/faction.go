@@ -1,10 +1,11 @@
 package faction
 
 import (
-	"github.com/aabstractt/hcf-core/hcf"
 	"github.com/aabstractt/hcf-core/hcf/datasource"
 	"github.com/aabstractt/hcf-core/hcf/datasource/storage"
 	"github.com/aabstractt/hcf-core/hcf/profile"
+	"github.com/aabstractt/hcf-core/hcf/utils"
+	"strings"
 )
 
 var (
@@ -16,6 +17,13 @@ type Faction struct {
 
 	id string
 	name string
+	leaderXuid string
+
+	deathsUntilRaidable float32
+	regenCooldown int
+	lastDtrUpdate int
+	balance int
+	points int
 }
 
 func (faction Faction) Id() string {
@@ -31,8 +39,21 @@ func (faction Faction) ForceSave() {
 	go datasource.GetCurrentDataSource().SaveFactionStorage(storage.FactionStorage{})
 }
 
+func NewFaction(id string, name string, leaderXuid string, deathsUntilRaidable float32, regenCooldown int, lastDtrUpdate int, balance int, points int) *Faction {
+	return &Faction{
+		id:                  id,
+		name:                name,
+		leaderXuid:          leaderXuid,
+		deathsUntilRaidable: deathsUntilRaidable,
+		regenCooldown:       regenCooldown,
+		lastDtrUpdate:       lastDtrUpdate,
+		balance:             balance,
+		points:              points,
+	}
+}
+
 func GetPlayerFaction(name string) *Faction {
-	player, exists := hcf.Server().PlayerByName(name)
+	player, exists := utils.Server().PlayerByName(name)
 
 	if player == nil || !exists {
 		return nil
@@ -55,7 +76,7 @@ func GetProfileFaction(pf *profile.Profile) *Faction {
 }
 
 func GetFaction(factionName string) *Faction {
-	factionId, present := factionsId[factionName]
+	factionId, present := factionsId[strings.ToLower(factionName)]
 
 	if present {
 		return factions[factionId]
@@ -75,5 +96,14 @@ func RegisterFactionsStored() {
 
 func RegisterNewFaction(f *Faction) {
 	factions[f.Id()] = f
-	factionsId[f.Name()] = f.Id()
+	factionsId[strings.ToLower(f.Name())] = f.Id()
+}
+
+func JoinFaction(pf *profile.Profile, f *Faction, factionRole int) {
+	pf.SetFactionId(f.Id())
+	pf.SetFactionRole(factionRole)
+
+	pf.Save(nil)
+
+	// TODO: Register faction member
 }

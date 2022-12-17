@@ -59,7 +59,7 @@ func (dataSource MongoDBDataSource) GetName() string {
 	return "MongoDB"
 }
 
-func (dataSource MongoDBDataSource) SaveProfileStorage(profileStorage storage.ProfileStorage, joinedBefore bool) {
+func (dataSource MongoDBDataSource) SaveProfileStorage(profileStorage storage.ProfileStorage) {
 	if profilesCollection == nil {
 		return
 	}

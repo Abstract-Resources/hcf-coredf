@@ -1,4 +1,9 @@
 
+[Factions]
+  Balance = 0
+  DTR = 1.1
+  Points = 0
+
 [Provider]
   Address = "cluster0.y05ycq4.mongodb.net"
   Dbname = "test"

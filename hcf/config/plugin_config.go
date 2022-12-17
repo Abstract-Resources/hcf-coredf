@@ -1,5 +1,7 @@
 package config
 
+var conf *ServerConfig = nil
+
 // ServerConfig is an extension of the Dragonfly server config to include fields specific to Vasar.
 type ServerConfig struct {
 	// Server contains fields specific to the server like Whitelisted or something like that.
@@ -20,10 +22,20 @@ type ServerConfig struct {
 		// Database name
 		Dbname string
 	}
+
+	Factions struct {
+		DTR float32
+		Balance int
+		Points int
+	}
 }
 
 // DefaultConfig returns a default config for the server.
 func DefaultConfig() ServerConfig {
+	if conf != nil {
+		return *conf
+	}
+
 	c := ServerConfig{}
 
 	c.Server.Whitelisted = true
@@ -34,5 +46,13 @@ func DefaultConfig() ServerConfig {
 	c.Provider.Password = ""
 	c.Provider.Dbname = "hcf_core"
 
+	c.Factions.DTR = 1.1
+	c.Factions.Balance = 0
+	c.Factions.Points = 0
+
 	return c
+}
+
+func SetConfig(config *ServerConfig)  {
+	conf = config
 }

@@ -22,7 +22,7 @@ func (dataSource MySQLDataSource) Initialize(log *logrus.Logger) bool {
 	return true
 }
 
-func (dataSource MySQLDataSource) SaveProfileStorage(profileStorage storage.ProfileStorage, joinedBefore bool) {
+func (dataSource MySQLDataSource) SaveProfileStorage(profileStorage storage.ProfileStorage) {
 
 }
 

@@ -1,11 +1,14 @@
 package faction
 
 import (
+	"github.com/aabstractt/hcf-core/hcf/config"
 	"github.com/aabstractt/hcf-core/hcf/faction"
 	"github.com/aabstractt/hcf-core/hcf/profile"
 	"github.com/aabstractt/hcf-core/hcf/utils"
+	"github.com/aabstractt/hcf-core/hcf/utils/chat"
 	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/player"
+	"github.com/google/uuid"
 )
 
 type CreateArgument struct {
@@ -17,24 +20,54 @@ type CreateArgument struct {
 func (clazz CreateArgument) Run(source cmd.Source, _ *cmd.Output) {
 	sender, allowed := source.(*player.Player)
 
-	if !allowed || profile.GetIfLoaded(sender.XUID()) == nil {
+	if !allowed {
 		sender.Message("Run this command in-game")
 
 		return
 	}
 
-	if faction.GetPlayerFaction(sender.Name()) != nil {
-		sender.Message(utils.ReplacePlaceHolders("YOU_ALREADY_IN_FACTION"))
+	pf := profile.GetIfLoaded(sender.XUID())
+	if pf == nil {
+		sender.Message("Run this command in-game")
+
+		return
+	}
+
+	if faction.GetProfileFaction(pf) != nil {
+		sender.Message(chat.YOU_ALREADY_IN_FACTION.Build())
 
 		return
 	}
 
 	f := faction.GetFaction(clazz.FactionName)
 	if f != nil {
-		sender.Message(utils.ReplacePlaceHolders("FACTION_ALREADY_EXISTS", clazz.FactionName))
+		sender.Message(chat.FACTION_ALREADY_EXISTS.Build(f.Name()))
 
 		return
 	}
 
-	// TODO: Create a new faction and register that
+	srvConf := config.DefaultConfig()
+
+	f = faction.NewFaction(
+		uuid.New().String(),
+		clazz.FactionName,
+		sender.XUID(),
+		srvConf.Factions.DTR,
+		0,
+		0,
+		srvConf.Factions.Balance,
+		srvConf.Factions.Points,
+	)
+	f.ForceSave()
+
+	faction.RegisterNewFaction(f)
+	faction.JoinFaction(pf, f, 0) // TODO: Change this and use an enum var
+
+	message := chat.ReplacePlaceHolders("PLAYER_FACTION_CREATED", map[string]string{
+		"player": sender.Name(),
+		"faction": f.Name(),
+	})
+	for _, p := range utils.Server().Players() {
+		p.Message(message)
+	}
 }

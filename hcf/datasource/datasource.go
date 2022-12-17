@@ -17,7 +17,7 @@ type DataSource interface {
 
 	Initialize(log *logrus.Logger) bool
 
-	SaveProfileStorage(profileStorage storage.ProfileStorage, joinedBefore bool)
+	SaveProfileStorage(profileStorage storage.ProfileStorage)
 
 	LoadProfileStorage(xuid string) *storage.ProfileStorage
 
@@ -36,12 +36,9 @@ func GetCurrentDataSource() DataSource {
 	return dataSource
 }
 
-func NewDataSource(conf *config.ServerConfig, log *logrus.Logger) {
-	if conf == nil {
-		return
-	}
+func NewDataSource(log *logrus.Logger) {
+	provider := config.DefaultConfig().Provider
 
-	provider := conf.Provider
 	if strings.ToLower(provider.ProviderName) == "mongodb" {
 		dataSource = NewMongoDB(provider.Address, provider.Username, provider.Password, provider.Dbname)
 	} else if strings.ToLower(provider.ProviderName) == "mysql" {

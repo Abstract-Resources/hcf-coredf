@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/aabstractt/hcf-core/hcf/datasource"
 	"github.com/aabstractt/hcf-core/hcf/datasource/storage"
-	"github.com/aabstractt/hcf-core/hcf/utils"
+	"github.com/aabstractt/hcf-core/hcf/utils/chat"
 	"github.com/df-mc/dragonfly/server/player"
 	scoreboard2 "github.com/df-mc/dragonfly/server/player/scoreboard"
 	"github.com/sandertv/gophertunnel/minecraft/text"
@@ -68,7 +68,7 @@ func RegisterNewProfile(player *player.Player, logger *logrus.Logger, profileSto
 	}
 
 	if !joinedBefore {
-		profile.Save(profileStorage, false)
+		profile.Save(profileStorage)
 	}
 
 	profiles[xuid] = profile
@@ -92,7 +92,7 @@ func FlushProfile(xuid string) {
 
 	profile.kills += 5
 
-	profile.Save(nil, true)
+	profile.Save(nil)
 
 	profile.Logger().Info(profile.Name() + " was flushed successfully!")
 
@@ -112,7 +112,7 @@ func Close() {
 func (profile Profile) UpdateScoreboard()  {
 	scoreboard := scoreboard2.New(text.Colourf("<green><bold>HCF"))
 
-	_, err := scoreboard.WriteString(fmt.Sprintf(utils.Colour("&e\n&b&lClaim: &r&aSpawn\n&a&lTime: &r&c%v\n&a\n&7mc.serverhcf.net"), fmt.Sprintf("%.1f", time.Since(profile.joinedAt).Seconds())))
+	_, err := scoreboard.WriteString(fmt.Sprintf(chat.Colour("&e\n&b&lClaim: &r&aSpawn\n&a&lTime: &r&c%v\n&a\n&7mc.serverhcf.net"), fmt.Sprintf("%.1f", time.Since(profile.joinedAt).Seconds())))
 	if err != nil {
 		return
 	}
@@ -178,7 +178,7 @@ func (profile Profile) SetBalance(balance int) {
 	profile.balance = balance
 }
 
-func (profile Profile) Save(profileStorage *storage.ProfileStorage, joinedBefore bool) {
+func (profile Profile) Save(profileStorage *storage.ProfileStorage) {
 	if profileStorage == nil {
 		profileStorage = storage.NewProfileStorage(
 			profile.xuid,
@@ -192,5 +192,5 @@ func (profile Profile) Save(profileStorage *storage.ProfileStorage, joinedBefore
 	}
 
 	// Execute this on other Thread to prevent lag spike on the Main thread!
-	go datasource.GetCurrentDataSource().SaveProfileStorage(*profileStorage, joinedBefore)
+	go datasource.GetCurrentDataSource().SaveProfileStorage(*profileStorage)
 }
